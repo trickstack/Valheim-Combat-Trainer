@@ -42,7 +42,8 @@ weather. Every other world plays completely vanilla: the mod does nothing outsid
 ## Items and kits (trainers only)
 
 - **Items:** search any item, give 1 or a full stack, at any quality (past max = Forge of Potential).
-- **Kits:** whole-inventory loadouts. **Use** lays out the kit with worn pieces equipped. **Edit** opens
+- **Kits:** whole-inventory loadouts. **Use** lays out the kit with worn pieces equipped, and you eat
+  the kit's foods (up to 3) in place of whatever you had. **Edit** opens
   a mock inventory with both pocket upgrades: click a slot and type to search, drag to move or swap.
   Preset kits ship with the mod (**Reset to Default** undoes your edits); make your own from scratch or
   from your current inventory.

@@ -110,6 +110,16 @@ namespace CombatTrainer {
                 if (ki.equip) equip.Add(it);
             }
             foreach (var it in equip) p.EquipItem(it, false);
+            // the kit's foods replace what you've eaten (first 3 kinds in slot order, not taken from the stack);
+            // a kit with no food leaves your belly as it is
+            var foods = k.items.OrderBy(i => i.y).ThenBy(i => i.x).Select(i => Make(i.prefab, 1, 1))
+                .Where(f => f != null && (f.m_shared.m_food > 0f || f.m_shared.m_foodStamina > 0f || f.m_shared.m_foodEitr > 0f))
+                .GroupBy(f => f.m_dropPrefab.name).Select(g => g.First()).Take(3).ToList();
+            if (foods.Count > 0) {
+                p.ClearFood();
+                foreach (var f in foods) p.EatFood(f);
+                Trainer.LastFoods = foods.Select(f => f.m_dropPrefab.name).ToList();
+            }
             Trainer.HealSoon();
             msg = "Using kit \"" + k.name + "\"." + (missing > 0 ? " " + missing + " item(s) couldn't be placed (unknown or blocked slot)." : "") + " Re-copy brings your own gear back.";
         }
