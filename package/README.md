@@ -1,5 +1,7 @@
 # Combat Trainer
 
+![A 1-star Seeker Soldier taking a big hit in the flat training Arena](https://raw.githubusercontent.com/trickstack/Valheim-Combat-Trainer/main/docs/hero.jpg)
+
 Practice any fight without risking your real character. Make a flat, empty arena world, copy your
 character into it read-only, spawn whatever you want to get better at, and die as often as you need.
 
