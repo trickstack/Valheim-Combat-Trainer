@@ -5,7 +5,7 @@
 A BepInEx mod for Valheim that turns a world into a flat, empty training Arena. Copy your real
 character into it read-only, spawn any enemy at any stars, and die for free.
 
-What it does and how to use it: [package/README.md](package/README.md) (this is also the Thunderstore page).
+## [Features and how to use it →](package/README.md)
 
 ## Layout
 
