@@ -7,7 +7,7 @@ character into it read-only, spawn whatever you want to get better at, and die a
 
 1. Make a **new character** for training.
 2. Make a **new world** and tick **Combat Trainer Arena** on the New World screen.
-3. Start the world with the new character and confirm it becomes a trainer (asked on the main menu, before anything loads).
+3. Start the world with the new character and confirm it becomes a trainer.
 4. Press **F8**. Copy one of your characters, or pick a kit.
 5. Add enemies, press **Fight!**, and fight them for real.
 
@@ -19,14 +19,14 @@ weather. Every other world plays completely vanilla: the mod does nothing outsid
 ## Your real characters stay safe
 
 - **Copy from <character>** (click twice) copies inventory, equipment, skills, foods with their timers,
-  known recipes and Forsaken power. The source save is only **read, never written**.
+  known recipes and Forsaken power.
 - Trainer characters can only enter arena worlds, so spawned gear never reaches a real world.
 - Starting an arena with a character that is not a trainer asks first; say no and nothing happens to it.
 
 ## Fights (F8, Fight tab)
 
-- Search any creature and press **Add**: it appears at once, frozen, in a cone in front of you.
-  Change stars and count, or remove it, live.
+- Search any creature and press **Add**: it appears at once, frozen, in front of you.
+  Change stars and count, or remove it.
 - **Fight!** starts a 3-second countdown. X, F8 or Esc just close the menu.
 - **F8 mid-fight pauses** everything; closing the menu resumes instantly.
 - Creatures drop nothing.
@@ -50,4 +50,4 @@ weather. Every other world plays completely vanilla: the mod does nothing outsid
 - Mead packs (10 of each) and skill presets: all skills 25 / 50 / 75 / 100, or back to your copied
   character's levels.
 
-Singleplayer. Typing in the menu never triggers game hotkeys.
+Singleplayer.
