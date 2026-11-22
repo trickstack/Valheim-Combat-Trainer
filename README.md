@@ -25,11 +25,13 @@ BepInExPack_Valheim (for example an r2modman profile).
 sh build.sh
 ```
 
-`build.sh` looks for Valheim in the default Steam folder and BepInEx in r2modman's Default profile.
-Override either with `VALHEIM_DIR` / `BEPINEX_CORE`, or put them in `build.local.sh` (git ignores it):
+`build.sh` looks for Valheim where Steam installs it by default
+(`C:/Program Files (x86)/Steam/steamapps/common/Valheim`) and for BepInEx in r2modman's Default
+profile. If yours are elsewhere, set `VALHEIM_DIR` / `BEPINEX_CORE`, or put them in `build.local.sh`
+(git ignores it):
 
 ```sh
-VALHEIM_DIR="D:/SteamLibrary/steamapps/common/Valheim"
+VALHEIM_DIR="C:/Steam/steamapps/common/Valheim"
 ```
 
 To install, copy `CombatTrainer.dll` and `package/kits/` into `BepInEx/plugins/CombatTrainer/`. To
