@@ -1,5 +1,7 @@
 # Valheim Combat Trainer
 
+![A 1-star Seeker Soldier taking a 707 damage hit in the flat training Arena](docs/hero.jpg)
+
 A BepInEx mod for Valheim that turns a world into a flat, empty training Arena. Copy your real
 character into it read-only, spawn any enemy at any stars, and die for free.
 
