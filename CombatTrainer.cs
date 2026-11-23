@@ -21,7 +21,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace CombatTrainer {
-    [BepInPlugin("trickstack.CombatTrainer", "CombatTrainer", "0.6.0")]
+    [BepInPlugin("trickstack.CombatTrainer", "CombatTrainer", "0.6.1")]
     public class Plugin : BaseUnityPlugin {
         internal static ConfigEntry<string> WorldName;
         internal static ConfigEntry<float> GroundHeight;
@@ -517,9 +517,10 @@ namespace CombatTrainer {
 
         // solid dark panel, larger light text: the default IMGUI skin is see-through and tiny
         internal static GUIStyle sWin, sHead, sLbl, sDim, sBtn, sOn, sField, sRow, sNum;
-        static Texture2D Tex(Color c) { var t = new Texture2D(1, 1); t.SetPixel(0, 0, c); t.Apply(); return t; }
+        // HideAndDontSave: the game unloads unused assets when a world loads, which would wipe these backgrounds
+        static Texture2D Tex(Color c) { var t = new Texture2D(1, 1) { hideFlags = HideFlags.HideAndDontSave }; t.SetPixel(0, 0, c); t.Apply(); return t; }
         static void Styles() {
-            if (sWin != null) return;
+            if (sWin != null && sWin.normal.background != null) return; // rebuilt if a texture was ever destroyed
             Color ink = new Color(0.93f, 0.9f, 0.84f), dim = new Color(0.74f, 0.7f, 0.63f), gold = new Color(1f, 0.72f, 0.3f);
             sWin = new GUIStyle(GUI.skin.window) { fontSize = 18, fontStyle = FontStyle.Bold, padding = new RectOffset(14, 14, 34, 12) };
             sWin.normal.background = sWin.onNormal.background = Tex(new Color(0.09f, 0.08f, 0.07f, 0.97f));
