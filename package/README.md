@@ -25,7 +25,7 @@ weather. Every other world plays completely vanilla: the mod does nothing outsid
 - Trainer characters can only enter arena worlds, so spawned gear never reaches a real world.
 - Starting an arena with a character that is not a trainer asks first; say no and nothing happens to it.
 
-## 1v1 (F8, 1v1 tab)
+## 1vX (F8, 1vX tab)
 
 - Search any creature and press **Add**: it appears at once, frozen, in front of you.
   Change stars and count, or remove it.
@@ -45,7 +45,7 @@ weather. Every other world plays completely vanilla: the mod does nothing outsid
 
 ## Works with mods
 
-- Creatures and items added by other mods show up in the 1v1, Waves, Items and Kits menus automatically.
+- Creatures and items added by other mods show up in the 1vX, Waves, Items and Kits menus automatically.
   Tested with Monstrum, Warfare and Azu Extended Player Inventory.
 - Inventory mods that add equipment or quick slots keep their slots: Combat Trainer never shrinks the inventory.
 

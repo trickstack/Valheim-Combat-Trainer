@@ -21,7 +21,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace CombatTrainer {
-    [BepInPlugin("trickstack.CombatTrainer", "CombatTrainer", "0.6.4")]
+    [BepInPlugin("trickstack.CombatTrainer", "CombatTrainer", "0.6.5")]
     public class Plugin : BaseUnityPlugin {
         internal static ConfigEntry<string> WorldName;
         internal static ConfigEntry<float> GroundHeight;
@@ -548,7 +548,7 @@ namespace CombatTrainer {
         }
 
         // ---- items tab (trainer characters only, so spawned gear can never reach a real world) ----
-        internal static int tab; // 0 1v1, 1 waves, 2 items, 3 kits
+        internal static int tab; // 0 1vX, 1 waves, 2 items, 3 kits
         static string itemSearch = "";
         static int itemQuality = 1;
         static Vector2 scrollI;
@@ -615,7 +615,7 @@ namespace CombatTrainer {
             DrawCharacter();
             GUILayout.Space(8);
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("1v1", tab == 0 ? sOn : sBtn, GUILayout.Height(30))) tab = 0;
+            if (GUILayout.Button("1vX", tab == 0 ? sOn : sBtn, GUILayout.Height(30))) tab = 0;
             if (GUILayout.Button("Waves", tab == 1 ? sOn : sBtn, GUILayout.Height(30))) { tab = 1; Waves.Reload(); }
             if (GUILayout.Button("Items", tab == 2 ? sOn : sBtn, GUILayout.Height(30))) tab = 2;
             if (GUILayout.Button("Kits", tab == 3 ? sOn : sBtn, GUILayout.Height(30))) { tab = 3; Kits.Reload(); }
