@@ -133,12 +133,34 @@ namespace CombatTrainer {
             return pool[pool.Count - 1];
         }
 
+        // the most stars the game itself ever gives a creature, from its spawn tables, raids and spawners
+        // (max level 1 = never starred, like Deathsquitos). Creatures found nowhere (modded, bosses) may get up to 2.
+        static Dictionary<string, int> maxStars;
+        static int MaxStars(string prefab) {
+            if (maxStars == null) {
+                maxStars = new Dictionary<string, int>();
+                Action<GameObject, int> note = (go, lvl) => {
+                    if (go == null) return; int old;
+                    maxStars[go.name] = Mathf.Max(maxStars.TryGetValue(go.name, out old) ? old : 0, Mathf.Clamp(lvl - 1, 0, 2));
+                };
+                foreach (var list in Resources.FindObjectsOfTypeAll<SpawnSystemList>())
+                    foreach (var d in list.m_spawners) note(d.m_prefab, d.m_maxLevel);
+                if (RandEventSystem.instance != null)
+                    foreach (var ev in RandEventSystem.instance.m_events) foreach (var d in ev.m_spawn) note(d.m_prefab, d.m_maxLevel);
+                foreach (var go in ZNetScene.instance.m_prefabs) {
+                    var cs = go != null ? go.GetComponent<CreatureSpawner>() : null;
+                    if (cs != null) note(cs.m_creaturePrefab, cs.m_maxLevel);
+                }
+            }
+            int m; return maxStars.TryGetValue(prefab, out m) ? m : 2;
+        }
+
         static void SpawnOne() {
             var e = Pick();
             if (e == null) { toSpawn = 0; return; }
             var prefab = ZNetScene.instance.GetPrefab(e.Prefab);
             float star = Mathf.Min(0.6f, (wave - 1) * 0.06f * StarMul[diff]), roll = Random.value;
-            int stars = roll < star * 0.35f && wave >= 5 ? 2 : roll < star ? 1 : 0;
+            int stars = Mathf.Min(MaxStars(e.Prefab), roll < star * 0.35f && wave >= 5 ? 2 : roll < star ? 1 : 0);
             // a free spot 15-30 m away in any direction
             var p = Player.m_localPlayer.transform.position;
             float radius = Trainer.RadiusOf(prefab);

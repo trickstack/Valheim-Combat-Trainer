@@ -21,7 +21,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace CombatTrainer {
-    [BepInPlugin("trickstack.CombatTrainer", "CombatTrainer", "0.6.3")]
+    [BepInPlugin("trickstack.CombatTrainer", "CombatTrainer", "0.6.4")]
     public class Plugin : BaseUnityPlugin {
         internal static ConfigEntry<string> WorldName;
         internal static ConfigEntry<float> GroundHeight;
