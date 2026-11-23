@@ -37,7 +37,7 @@ weather. Every other world plays completely vanilla: the mod does nothing outsid
 
 - Endless waves from one biome, coming at you from every side, 15-30 m out. Each wave is bigger, tougher
   creatures join as the waves go on, and stars get likelier.
-- A built-in set for every biome from Meadows to Ashlands, and three difficulties: **Vanilla**, **Hard**
+- A built-in set for every biome from Meadows to the Deep North, and three difficulties: **Vanilla**, **Hard**
   and **Very Hard** (more creatures per wave, tougher ones more often and earlier).
 - **Edit** any set: add or remove creatures and set how often each shows up, how much the harder
   difficulties favour it, and the first wave it can appear in. Make your own sets too.

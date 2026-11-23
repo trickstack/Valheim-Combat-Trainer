@@ -1,6 +1,6 @@
 // Combat Trainer waves: endless, escalating waves of one biome's creatures from all around you (arena only).
 // - A wave set is a list of creatures with a weight (how often), a tier (1-3: how much Hard/Very Hard favour it)
-//   and the first wave it can show up in. Seven built-in sets, one per biome; edits and your own sets are saved as
+//   and the first wave it can show up in. Eight built-in sets, one per biome; edits and your own sets are saved as
 //   .wave text files in BepInEx/config/CombatTrainer/waves/ (a built-in's edit is <id>.wave; Reset deletes it).
 // - Wave n has 2+n creatures (x1.5 Hard, x2 Very Hard, max 30), spawned one by one at random spots 15-30 m around
 //   you. Stars get likelier every wave. Clear a wave, short break, next one. F8 pauses; dying ends the run.
@@ -29,6 +29,7 @@ namespace CombatTrainer {
             new[] { "plains", "Plains", "Goblin 6 1 1", "GoblinArcher 3 1 1", "Deathsquito 3 1 1", "GoblinShaman 2 2 2", "BlobTar 2 2 2", "GoblinBrute 1 3 4", "Unbjorn 1 3 4", "Lox 1 3 6" },
             new[] { "mistlands", "Mistlands", "Seeker 6 1 1", "Tick 3 1 1", "SeekerBrood 2 1 1", "SeekerBrute 1 3 3", "Gjall 1 3 5" },
             new[] { "ashlands", "Ashlands", "Charred_Melee 5 1 1", "Charred_Archer 3 1 1", "Charred_Twitcher 3 1 1", "BlobLava 2 1 1", "Volture 2 1 2", "Asksvin 3 2 2", "Charred_Mage 2 2 3", "Morgen 1 3 5", "FallenValkyrie 1 3 6" },
+            new[] { "deepnorth", "Deep North", "Greydwarf_Frozen 5 1 1", "Skeleton_DeepNorth 4 1 1", "Frysling 3 1 1", "BlobFrost 2 1 1", "Greydwarf_Shaman_Frozen 2 2 2", "Elaking 2 2 2", "Moose 1 2 3", "JotunWitch 1 3 4", "JotunWarrior 1 3 4", "JotunWarriorDualWield 1 3 5", "ElakingMole 1 3 5", "Barka 1 3 6", "TrollFrost 1 3 6" },
         };
         static readonly string[] DiffNames = { "Vanilla", "Hard", "Very Hard" };
         static readonly float[] CountMul = { 1f, 1.5f, 2f }, StarMul = { 1f, 1.5f, 2f };
