@@ -21,7 +21,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace CombatTrainer {
-    [BepInPlugin("trickstack.CombatTrainer", "CombatTrainer", "0.6.1")]
+    [BepInPlugin("trickstack.CombatTrainer", "CombatTrainer", "0.6.2")]
     public class Plugin : BaseUnityPlugin {
         internal static ConfigEntry<string> WorldName;
         internal static ConfigEntry<float> GroundHeight;
@@ -246,7 +246,7 @@ namespace CombatTrainer {
             // Player.Load reads the inventory before the "invrows" unique key (extra rows bought from the trader),
             // so open all rows first or items in the extra rows are dropped, then apply the source's row count
             while (p.RemoveUniqueKeyValue("invrows")) { }
-            p.GetInventory().SetHeight(Mathf.Max(p.GetInventory().GetHeight(), 9)); // never shrink: inventory mods keep slots below
+            p.GetInventory().SetHeight(Mathf.Max(p.GetInventory().GetHeight(), 16)); // never shrink: inventory mods keep slots below
             // Player.Load only adds to these, and m_knownStations is a Dictionary that throws on a repeat copy:
             // start them empty so the trainer ends up with exactly the source's
             var tp = Traverse.Create(p);
@@ -767,21 +767,14 @@ namespace CombatTrainer {
         }
     }
 
-    // Player.Load reads the inventory before the saved row count ("invrows", the pocket upgrades), so in the
-    // arena open every row first and apply the saved count afterwards: nothing in the extra rows gets dropped
-    // Only ever grows the inventory: inventory mods (AzuEPI, ExtraSlots...) keep equipment/quick slots in rows
-    // below the normal ones, and shrinking past those would drop the items in them.
+    // Player.Load refuses items outside the inventory's current height, and reads the inventory before the saved
+    // row count ("invrows", the pocket upgrades). So in the arena open plenty of rows first; the game's own
+    // SetInventorySize in OnSpawned (which inventory mods like AzuEPI hook) then sets the real size. Never shrinks.
     [HarmonyPatch(typeof(Player), "Load")]
     static class KeepExtraRows {
-        static void Prefix(Player __instance, out int __state) {
-            var inv = __instance.GetInventory(); __state = inv.GetHeight();
-            if (Plugin.Active) inv.SetHeight(Mathf.Max(__state, 9));
-        }
-        static void Postfix(Player __instance, int __state) {
-            if (!Plugin.Active) return;
-            string v; int rows;
-            int saved = __instance.TryGetUniqueKeyValue("invrows", out v) && int.TryParse(v, out rows) ? Mathf.Clamp(rows, 4, 9) : 4;
-            __instance.GetInventory().SetHeight(Mathf.Max(__state, saved));
+        static void Prefix(Player __instance) {
+            var inv = __instance.GetInventory();
+            if (Plugin.Active) inv.SetHeight(Mathf.Max(inv.GetHeight(), 16));
         }
     }
 
