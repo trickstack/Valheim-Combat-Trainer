@@ -101,7 +101,9 @@ namespace CombatTrainer {
             var p = Player.m_localPlayer; var inv = p.GetInventory();
             p.UnequipAllItems();
             inv.RemoveAll();
-            p.SetInventorySize(H);
+            // both pocket upgrades, through the game's own call so inventory mods re-lay their slots below; never shrinks
+            string rv; int r;
+            if (!p.TryGetUniqueKeyValue("invrows", out rv) || !int.TryParse(rv, out r) || r < H) p.SetInventorySize(H);
             var equip = new List<ItemDrop.ItemData>();
             int missing = 0;
             foreach (var ki in k.items) {
@@ -126,10 +128,20 @@ namespace CombatTrainer {
 
         static Kit FromInventory(Player p) {
             var k = new Kit { name = "My kit " + DateTime.Now.ToString("MMM d HH:mm") };
+            var overflow = new List<ItemDrop.ItemData>();
             foreach (var it in p.GetInventory().GetAllItems()) {
-                if (it.m_dropPrefab == null || it.m_gridPos.y >= H) continue;
+                if (it.m_dropPrefab == null) continue;
+                if (it.m_gridPos.x >= W || it.m_gridPos.y >= H) { overflow.Add(it); continue; } // inventory mods' equipment/quick slots
                 k.items.Add(new KitItem { prefab = it.m_dropPrefab.name, quality = it.m_quality, stack = it.m_stack, x = it.m_gridPos.x, y = it.m_gridPos.y, equip = it.m_equipped });
             }
+            // those slots aren't in the kit grid: put their items in free cells, bottom row first
+            foreach (var it in overflow)
+                for (int i = W * H - 1; i >= 0; i--) {
+                    int x = i % W, y = i / W;
+                    if (k.items.Any(c => c.x == x && c.y == y)) continue;
+                    k.items.Add(new KitItem { prefab = it.m_dropPrefab.name, quality = it.m_quality, stack = it.m_stack, x = x, y = y, equip = it.m_equipped });
+                    break;
+                }
             return k;
         }
 
