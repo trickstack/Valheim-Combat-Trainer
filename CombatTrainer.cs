@@ -21,7 +21,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace CombatTrainer {
-    [BepInPlugin("trickstack.CombatTrainer", "CombatTrainer", "0.6.2")]
+    [BepInPlugin("trickstack.CombatTrainer", "CombatTrainer", "0.6.3")]
     public class Plugin : BaseUnityPlugin {
         internal static ConfigEntry<string> WorldName;
         internal static ConfigEntry<float> GroundHeight;
@@ -343,8 +343,9 @@ namespace CombatTrainer {
             var rested = se.GetStatusEffect(SEMan.s_statusEffectRested) ?? se.AddStatusEffect(SEMan.s_statusEffectRested, true);
             if (rested != null) rested.m_ttl = 0f; // 0 = never expires
             var foods = Traverse.Create(p).Field("m_foods").GetValue<List<Player.Food>>();
-            if (foods != null && foods.Count > 0)
-                LastFoods = foods.Where(f => f.m_item != null && f.m_item.m_dropPrefab != null).Select(f => f.m_item.m_dropPrefab.name).ToList();
+            // m_name is the item prefab; foods restored from a save have no m_dropPrefab, so don't rely on that
+            var eaten = foods == null ? null : foods.Where(f => !string.IsNullOrEmpty(f.m_name)).Select(f => f.m_name).ToList();
+            if (eaten != null && eaten.Count > 0) LastFoods = eaten;
             // trainer creatures saved in the world from an earlier session load in late: remove any we don't own
             foreach (var c in Character.GetAllCharacters().ToList()) {
                 if (c == null || c is Player) continue;
