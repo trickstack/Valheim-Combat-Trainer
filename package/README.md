@@ -43,6 +43,24 @@ weather. Every other world plays completely vanilla: the mod does nothing outsid
   difficulties favour it, and the first wave it can appear in. Make your own sets too.
 - F8 pauses the run. Dying ends it, with a **Retry wave N** button.
 
+## Items (F8, Items tab)
+
+- Search any item and give yourself 1 or a full stack.
+- Pick a quality first; above an item's max it counts as Forge of Potential levels.
+
+## Kits (F8, Kits tab)
+
+- Whole-inventory loadouts. **Use** swaps your entire inventory for the kit, puts on its armor, and you eat
+  the kit's foods (up to 3) in place of whatever you had.
+- **Edit** opens a mock inventory with both pocket upgrades: click a slot and type to search, drag to move or swap,
+  set quality, amount and whether it's worn.
+- Four preset kits ship with the mod (**Reset to Default** undoes your edits). Make your own from scratch or
+  from your current inventory.
+- **Mead packs** (10 of each) and **skill presets**: all skills 25 / 50 / 75 / 100, or back to your copied
+  character's levels.
+
+Items and Kits only work on trainer characters, so spawned gear can never reach a real world.
+
 ## Works with mods
 
 - Creatures and items added by other mods show up in the 1vX, Waves, Items and Kits menus automatically.
@@ -57,16 +75,5 @@ weather. Every other world plays completely vanilla: the mod does nothing outsid
 - All gear auto-repairs on every kill and every death.
 - Food and meads aren't used up in the Arena.
 - A stack of Pukeberries to swap foods.
-
-## Items and kits (trainers only)
-
-- **Items:** search any item, give 1 or a full stack, at any quality (past max = Forge of Potential).
-- **Kits:** whole-inventory loadouts. **Use** lays out the kit with worn pieces equipped, and you eat
-  the kit's foods (up to 3) in place of whatever you had. **Edit** opens
-  a mock inventory with both pocket upgrades: click a slot and type to search, drag to move or swap.
-  Preset kits ship with the mod (**Reset to Default** undoes your edits); make your own from scratch or
-  from your current inventory.
-- Mead packs (10 of each) and skill presets: all skills 25 / 50 / 75 / 100, or back to your copied
-  character's levels.
 
 Singleplayer.
