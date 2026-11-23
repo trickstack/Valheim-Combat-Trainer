@@ -1,8 +1,8 @@
 {
-    "version_number": "0.6.5",
+    "version_number": "0.6.6",
     "name": "CombatTrainer",
     "website_url": "https://github.com/trickstack/Valheim-Combat-Trainer",
-    "description": "Press F8, copy your real character, spawn any enemy at any stars or survive biome waves, die for free. Kits, item spawner, free food and meads. Works with modded mobs and gear.",
+    "description": "Combat sandbox: try builds on a whim, practice any fight, or survive endless biome waves. Free death, instant respawn, free food and meads. Copies your real character read-only. Works with modded content.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.2360"
     ]
