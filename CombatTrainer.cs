@@ -21,7 +21,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace CombatTrainer {
-    [BepInPlugin("trickstack.CombatTrainer", "CombatTrainer", "0.5.9")]
+    [BepInPlugin("trickstack.CombatTrainer", "CombatTrainer", "0.6.0")]
     public class Plugin : BaseUnityPlugin {
         internal static ConfigEntry<string> WorldName;
         internal static ConfigEntry<float> GroundHeight;
@@ -226,7 +226,7 @@ namespace CombatTrainer {
                 if (it.m_shared.m_useDurability) it.m_durability = it.GetMaxDurability();
         }
 
-        static bool Live() { return Plugin.Active && Player.m_localPlayer != null && !Player.m_localPlayer.IsDead(); }
+        internal static bool Live() { return Plugin.Active && Player.m_localPlayer != null && !Player.m_localPlayer.IsDead(); }
 
         // ---- trainer characters (copy from a real character, read-only) ----
         internal const string TrainerKey = "combattrainer_trainer", SourceKey = "combattrainer_source";
@@ -309,6 +309,7 @@ namespace CombatTrainer {
                 if (countdown <= 0f) Fight();
             }
             if (Time.time >= nextTick && Live() && IsTrainer(Player.m_localPlayer)) { nextTick = Time.time + 1f; Upkeep(Player.m_localPlayer); }
+            Waves.Update();
             if (healAt > 0f && Time.time >= healAt && Live()) { healAt = -1f; var hp = Player.m_localPlayer; hp.SetHealth(hp.GetMaxHealth()); hp.AddStamina(hp.GetMaxStamina()); }
         }
 
@@ -363,6 +364,7 @@ namespace CombatTrainer {
                 KickPending = true;
                 return;
             }
+            bool waveRun = Waves.Running;
             Clear(); // leftovers from a previous session or the fight you just lost
             if (DiedHere) {
                 DiedHere = false;
@@ -377,7 +379,8 @@ namespace CombatTrainer {
                 HealSoon(); // again once the foods' max health has settled
                 RepairAll(p);
                 p.AddStamina(p.GetMaxStamina());
-                if (Setup.Count > 0) { RespawnAll(); SetMenu(true); } // same fight again, frozen, ready
+                if (waveRun) { Waves.Fell(); tab = 1; SetMenu(true); }
+                else if (Setup.Count > 0) { RespawnAll(); SetMenu(true); } // same fight again, frozen, ready
             }
             var berries = ObjectDB.instance.GetItemPrefab("Pukeberries");
             if (berries != null) {
@@ -396,9 +399,10 @@ namespace CombatTrainer {
             Spawned.Clear();
             foreach (var e in Setup) e.Live.Clear();
             FightOn = false;
+            Waves.Reset();
         }
 
-        static float RadiusOf(GameObject prefab) {
+        internal static float RadiusOf(GameObject prefab) {
             var cap = prefab.GetComponent<CapsuleCollider>();
             return cap != null ? Mathf.Max(0.4f, cap.radius * prefab.transform.localScale.x) : 1f;
         }
@@ -428,7 +432,13 @@ namespace CombatTrainer {
         static void SpawnOne(Entry e) {
             var prefab = ZNetScene.instance.GetPrefab(e.Prefab);
             if (prefab == null) return;
-            Vector3 pos = PickSpot(RadiusOf(prefab));
+            var ch = SpawnAt(prefab, e.Stars, PickSpot(RadiusOf(prefab)));
+            if (ch != null) e.Live.Add(ch);
+            Frozen = true; FightOn = false; // new creatures wait for Fight!
+        }
+
+        // a trainer creature: tagged (so it's cleaned up), drops nothing, facing you
+        internal static Character SpawnAt(GameObject prefab, int stars, Vector3 pos) {
             Vector3 look = Player.m_localPlayer.transform.position - pos; look.y = 0f;
             var go = Object.Instantiate(prefab, pos, Quaternion.LookRotation(look.sqrMagnitude > 0.01f ? look : Vector3.forward));
             var nv = go.GetComponent<ZNetView>();
@@ -436,11 +446,16 @@ namespace CombatTrainer {
             var drop = go.GetComponent<CharacterDrop>();
             if (drop != null) Object.Destroy(drop);
             var ch = go.GetComponent<Character>();
-            if (ch != null && e.Stars > 0) ch.SetLevel(e.Stars + 1);
+            if (ch != null && stars > 0) ch.SetLevel(stars + 1);
             var ai = go.GetComponent<BaseAI>();
             if (ai != null) Spawned.Add(ai);
-            if (ch != null) e.Live.Add(ch);
-            Frozen = true; FightOn = false; // new creatures wait for Fight!
+            return ch;
+        }
+
+        internal static Vector3 Ground(Vector3 pos) {
+            float h;
+            if (ZoneSystem.instance.GetGroundHeight(pos, out h)) pos.y = h;
+            return pos + Vector3.up * 0.3f;
         }
 
         static void Despawn(Character c) {
@@ -459,7 +474,7 @@ namespace CombatTrainer {
             foreach (var e in Setup) for (int i = 0; i < e.Count; i++) SpawnOne(e);
         }
 
-        static List<KeyValuePair<string, string>> Catalog() {
+        internal static List<KeyValuePair<string, string>> Catalog() {
             if (catalog != null) return catalog;
             catalog = new List<KeyValuePair<string, string>>();
             foreach (var go in ZNetScene.instance.m_prefabs) {
@@ -491,8 +506,9 @@ namespace CombatTrainer {
                 st.normal.textColor = new Color(1f, 0.78f, 0.3f);
                 GUI.Label(r, n, st);
             }
+            Styles();
+            Waves.Hud();
             if (MenuOpen && Live()) {
-                Styles();
                 win.width = 680; // fixed: long text wraps instead of stretching the window
                 win.height = 10;  // shrink-wraps to the content each frame
                 win = GUILayout.Window(735112, win, Draw, "Combat Trainer   ·   X or F8 closes, Fight! starts", sWin, GUILayout.Width(680));
@@ -530,7 +546,7 @@ namespace CombatTrainer {
         }
 
         // ---- items tab (trainer characters only, so spawned gear can never reach a real world) ----
-        static int tab; // 0 fight, 1 items
+        internal static int tab; // 0 1v1, 1 waves, 2 items, 3 kits
         static string itemSearch = "";
         static int itemQuality = 1;
         static Vector2 scrollI;
@@ -597,12 +613,14 @@ namespace CombatTrainer {
             DrawCharacter();
             GUILayout.Space(8);
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Fight", tab == 0 ? sOn : sBtn, GUILayout.Height(30))) tab = 0;
-            if (GUILayout.Button("Items", tab == 1 ? sOn : sBtn, GUILayout.Height(30))) tab = 1;
-            if (GUILayout.Button("Kits", tab == 2 ? sOn : sBtn, GUILayout.Height(30))) { tab = 2; Kits.Reload(); }
+            if (GUILayout.Button("1v1", tab == 0 ? sOn : sBtn, GUILayout.Height(30))) tab = 0;
+            if (GUILayout.Button("Waves", tab == 1 ? sOn : sBtn, GUILayout.Height(30))) { tab = 1; Waves.Reload(); }
+            if (GUILayout.Button("Items", tab == 2 ? sOn : sBtn, GUILayout.Height(30))) tab = 2;
+            if (GUILayout.Button("Kits", tab == 3 ? sOn : sBtn, GUILayout.Height(30))) { tab = 3; Kits.Reload(); }
             GUILayout.EndHorizontal();
-            if (tab == 1 || tab == 2) {
-                if (tab == 1) DrawItems(); else Kits.Draw();
+            if (tab == 1) { Waves.Draw(); GUI.DragWindow(); return; }
+            if (tab == 2 || tab == 3) {
+                if (tab == 2) DrawItems(); else Kits.Draw();
                 GUILayout.Space(6);
                 DrawFightButton();
                 GUI.DragWindow();
@@ -621,6 +639,7 @@ namespace CombatTrainer {
                 GUILayout.Label(kv.Value, sLbl, GUILayout.Width(220));
                 GUILayout.Label(kv.Key, sDim);
                 if (GUILayout.Button("Add", sBtn, GUILayout.Width(60))) {
+                    if (Waves.Running) Waves.Stop();
                     var e = Setup.FirstOrDefault(x => x.Prefab == kv.Key && x.Stars == 0);
                     if (e != null) { e.Count++; SpawnOne(e); }           // same creature again: one more
                     else { e = new Entry { Prefab = kv.Key, Label = kv.Value }; Setup.Add(e); SpawnOne(e); }
@@ -716,6 +735,22 @@ namespace CombatTrainer {
                 __instance.Message(MessageHud.MessageType.Center, "Trainer characters can only enter Combat Trainer Arena worlds");
                 Trainer.KickPending = true;
             }
+        }
+    }
+
+    // arena: eating and drinking never uses the item up, so long wave runs don't stop for restocking
+    [HarmonyPatch(typeof(Player), "ConsumeItem")]
+    static class FreeConsumables {
+        internal static ItemDrop.ItemData Item;
+        static void Prefix(Player __instance, ItemDrop.ItemData item) { if (Plugin.Active && __instance == Player.m_localPlayer) Item = item; }
+        static System.Exception Finalizer(System.Exception __exception) { Item = null; return __exception; }
+    }
+
+    [HarmonyPatch(typeof(Inventory), "RemoveOneItem")]
+    static class KeepConsumed {
+        static bool Prefix(ItemDrop.ItemData item, ref bool __result) {
+            if (FreeConsumables.Item == null || item != FreeConsumables.Item) return true;
+            __result = true; return false;
         }
     }
 

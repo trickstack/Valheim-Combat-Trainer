@@ -25,7 +25,7 @@ weather. Every other world plays completely vanilla: the mod does nothing outsid
 - Trainer characters can only enter arena worlds, so spawned gear never reaches a real world.
 - Starting an arena with a character that is not a trainer asks first; say no and nothing happens to it.
 
-## Fights (F8, Fight tab)
+## 1v1 (F8, 1v1 tab)
 
 - Search any creature and press **Add**: it appears at once, frozen, in front of you.
   Change stars and count, or remove it.
@@ -33,12 +33,23 @@ weather. Every other world plays completely vanilla: the mod does nothing outsid
 - **F8 mid-fight pauses** everything; closing the menu resumes instantly.
 - Creatures drop nothing.
 
+## Waves (F8, Waves tab)
+
+- Endless waves from one biome, coming at you from every side, 15-30 m out. Each wave is bigger, tougher
+  creatures join as the waves go on, and stars get likelier.
+- A built-in set for every biome from Meadows to Ashlands, and three difficulties: **Vanilla**, **Hard**
+  and **Very Hard** (more creatures per wave, tougher ones more often and earlier).
+- **Edit** any set: add or remove creatures and set how often each shows up, how much the harder
+  difficulties favour it, and the first wave it can appear in. Make your own sets too.
+- F8 pauses the run. Dying ends it, with a **Retry wave N** button.
+
 ## Free death and comforts
 
 - No tombstone, no skill loss. Respawn after 2 seconds **where you died**, fed with your last foods,
   at full health, with the same fight set up again.
 - Permanent Rested. Full heal about 5 seconds after eating.
 - All gear auto-repairs on every kill and every death.
+- Food and meads aren't used up in the Arena.
 - A stack of Pukeberries to swap foods.
 
 ## Items and kits (trainers only)
