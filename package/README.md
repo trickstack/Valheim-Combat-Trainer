@@ -11,7 +11,7 @@ character into it read-only, spawn whatever you want to get better at, and die a
 2. Make a **new world** and tick **Combat Trainer Arena** on the New World screen.
 3. Start the world with the new character and confirm it becomes a trainer.
 4. Press **F8**. Copy one of your characters, or pick a kit.
-5. Add enemies, press **Fight!**, and fight them for real.
+5. Add enemies and press **Fight!**, or start a wave set on the **Waves** tab.
 
 ## The arena
 
@@ -42,6 +42,12 @@ weather. Every other world plays completely vanilla: the mod does nothing outsid
 - **Edit** any set: add or remove creatures and set how often each shows up, how much the harder
   difficulties favour it, and the first wave it can appear in. Make your own sets too.
 - F8 pauses the run. Dying ends it, with a **Retry wave N** button.
+
+## Works with mods
+
+- Creatures and items added by other mods show up in the 1v1, Waves, Items and Kits menus automatically.
+  Tested with Monstrum, Warfare and Azu Extended Player Inventory.
+- Inventory mods that add equipment or quick slots keep their slots: Combat Trainer never shrinks the inventory.
 
 ## Free death and comforts
 
