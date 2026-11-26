@@ -310,6 +310,7 @@ namespace CombatTrainer {
             }
             if (Time.time >= nextTick && Live() && IsTrainer(Player.m_localPlayer)) { nextTick = Time.time + 1f; Upkeep(Player.m_localPlayer); }
             Waves.Update();
+            Gauntlet.Update();
             if (healAt > 0f && Time.time >= healAt && Live()) { healAt = -1f; var hp = Player.m_localPlayer; hp.SetHealth(hp.GetMaxHealth()); hp.AddStamina(hp.GetMaxStamina()); }
         }
 
@@ -365,7 +366,7 @@ namespace CombatTrainer {
                 KickPending = true;
                 return;
             }
-            bool waveRun = Waves.Running;
+            bool waveRun = Waves.Running, gauntletRun = Gauntlet.Running;
             Clear(); // leftovers from a previous session or the fight you just lost
             if (DiedHere) {
                 DiedHere = false;
@@ -381,6 +382,7 @@ namespace CombatTrainer {
                 RepairAll(p);
                 p.AddStamina(p.GetMaxStamina());
                 if (waveRun) { Waves.Fell(); tab = 1; SetMenu(true); }
+                else if (gauntletRun) { Gauntlet.Fell(); tab = 4; SetMenu(true); }
                 else if (Setup.Count > 0) { RespawnAll(); SetMenu(true); } // same fight again, frozen, ready
             }
             var berries = ObjectDB.instance.GetItemPrefab("Pukeberries");
@@ -401,6 +403,7 @@ namespace CombatTrainer {
             foreach (var e in Setup) e.Live.Clear();
             FightOn = false;
             Waves.Reset();
+            Gauntlet.Reset();
         }
 
         internal static float RadiusOf(GameObject prefab) {
@@ -509,6 +512,7 @@ namespace CombatTrainer {
             }
             Styles();
             Waves.Hud();
+            Gauntlet.Hud();
             if (MenuOpen && Live()) {
                 win.width = 680; // fixed: long text wraps instead of stretching the window
                 win.height = 10;  // shrink-wraps to the content each frame
@@ -548,7 +552,7 @@ namespace CombatTrainer {
         }
 
         // ---- items tab (trainer characters only, so spawned gear can never reach a real world) ----
-        internal static int tab; // 0 1vX, 1 waves, 2 items, 3 kits
+        internal static int tab; // 0 1vX, 1 waves, 2 items, 3 kits, 4 gauntlet
         static string itemSearch = "";
         static int itemQuality = 1;
         static Vector2 scrollI;
@@ -617,10 +621,12 @@ namespace CombatTrainer {
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("1vX", tab == 0 ? sOn : sBtn, GUILayout.Height(30))) tab = 0;
             if (GUILayout.Button("Waves", tab == 1 ? sOn : sBtn, GUILayout.Height(30))) { tab = 1; Waves.Reload(); }
+            if (GUILayout.Button("Gauntlet", tab == 4 ? sOn : sBtn, GUILayout.Height(30))) tab = 4;
             if (GUILayout.Button("Items", tab == 2 ? sOn : sBtn, GUILayout.Height(30))) tab = 2;
             if (GUILayout.Button("Kits", tab == 3 ? sOn : sBtn, GUILayout.Height(30))) { tab = 3; Kits.Reload(); }
             GUILayout.EndHorizontal();
             if (tab == 1) { Waves.Draw(); GUI.DragWindow(); return; }
+            if (tab == 4) { Gauntlet.Draw(); GUI.DragWindow(); return; }
             if (tab == 2 || tab == 3) {
                 if (tab == 2) DrawItems(); else Kits.Draw();
                 GUILayout.Space(6);
@@ -642,6 +648,7 @@ namespace CombatTrainer {
                 GUILayout.Label(kv.Key, sDim);
                 if (GUILayout.Button("Add", sBtn, GUILayout.Width(60))) {
                     if (Waves.Running) Waves.Stop();
+                    if (Gauntlet.Running) Gauntlet.Stop();
                     var e = Setup.FirstOrDefault(x => x.Prefab == kv.Key && x.Stars == 0);
                     if (e != null) { e.Count++; SpawnOne(e); }           // same creature again: one more
                     else { e = new Entry { Prefab = kv.Key, Label = kv.Value }; Setup.Add(e); SpawnOne(e); }

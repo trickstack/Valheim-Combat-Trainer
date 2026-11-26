@@ -86,7 +86,7 @@ namespace CombatTrainer {
         }
 
         // ---- applying ----
-        static ItemDrop.ItemData Make(string prefabName, int quality, int stack) {
+        internal static ItemDrop.ItemData Make(string prefabName, int quality, int stack) {
             var prefab = ObjectDB.instance.GetItemPrefab(prefabName);
             if (prefab == null) return null;
             var it = prefab.GetComponent<ItemDrop>().m_itemData.Clone();
@@ -155,7 +155,7 @@ namespace CombatTrainer {
         static readonly string[] Resist = { "BarleyWine", "MeadFrostResist", "MeadPoisonResist" };
         static readonly string[] Combat = { "MeadBzerker", "MeadHasty", "MeadLightfoot", "MeadStrength", "MeadSwimmer", "MeadTrollPheromones", "MeadBugRepellent", "MeadTamer" };
 
-        static IEnumerable<Skills.Skill> AllSkills(Player p) {
+        internal static IEnumerable<Skills.Skill> AllSkills(Player p) {
             var sk = p.GetSkills(); var tr = Traverse.Create(sk);
             foreach (var def in sk.m_skills) {
                 Skills.Skill s = null;
