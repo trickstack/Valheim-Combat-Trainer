@@ -11,7 +11,7 @@ character into it read-only, spawn whatever you want to get better at, and die a
 2. Make a **new world** and tick **Combat Trainer Arena** on the New World screen.
 3. Start the world with the new character and confirm it becomes a trainer.
 4. Press **F8**. Copy one of your characters, or pick a kit.
-5. Add enemies and press **Fight!**, or start a wave set on the **Waves** tab.
+5. Add enemies and press **Fight!**, start a wave set on the **Waves** tab, or run the **Gauntlet**.
 
 ## The arena
 
@@ -43,6 +43,19 @@ weather. Every other world plays completely vanilla: the mod does nothing outsid
   difficulties favour it, and the first wave it can appear in. Make your own sets too.
 - F8 pauses the run. Dying ends it, with a **Retry wave N** button.
 
+## Gauntlet (F8, Gauntlet tab)
+
+- Random, realistic encounters one after another from Black Forest to the Deep North (or only the biomes
+  your character has found): an opener, then reinforcements once you've worn the first ones down.
+- Health doesn't matter: you can take **3 hits** per encounter (Hard 2, Very Hard 1). Blocks that hold,
+  parries, dodges and burn or poison ticks don't count. Clear the encounter and the count resets.
+- **Marked** enemies glow violet with an orange name: you can't block, parry or stagger them.
+- Your gear doesn't matter either: pick 3 weapon types and an armor style, and each encounter hands you
+  that biome's tier of weapons, shield, armor, foods, meads and skills. Move things on the hotbar and the
+  next loadout keeps them there. A healing mead gives back a hit.
+- Hard and Very Hard also bring reinforcements sooner, add enemies, mark more of them and roll stars.
+- Dying shows every hit you took, with a **Retry** that replays the same encounter, gear and spawn spots.
+
 ## Items (F8, Items tab)
 
 - Search any item and give yourself 1 or a full stack.
@@ -59,7 +72,7 @@ weather. Every other world plays completely vanilla: the mod does nothing outsid
 - **Mead packs** (10 of each) and **skill presets**: all skills 25 / 50 / 75 / 100, or back to your copied
   character's levels.
 
-Items and Kits only work on trainer characters, so spawned gear can never reach a real world.
+Items, Kits and the Gauntlet only work on trainer characters, so spawned gear can never reach a real world.
 
 ## Works with mods
 
