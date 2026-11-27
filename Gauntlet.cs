@@ -228,12 +228,12 @@ namespace CombatTrainer {
             if (g.When == 'p') { // progress into the fight so far: no clock, kiting never brings the next wave
                 float hp = 0f, max = 0f;
                 foreach (var grp in live) foreach (var c in grp) { if (c == null) continue; max += c.GetMaxHealth(); if (!c.IsDead()) hp += c.GetHealth(); }
-                return max <= 0f || hp <= max * g.Arg / 100f;
+                return max <= 0f || hp <= max * Gate(g.Arg) / 100f;
             }
             if (g.When == 'h') {
                 float hp = 0f, max = 0f;
                 foreach (var c in prev) { if (c == null) continue; max += c.GetMaxHealth(); if (!c.IsDead()) hp += c.GetHealth(); }
-                return max <= 0f || hp <= max * g.Arg / 100f;
+                return max <= 0f || hp <= max * Gate(g.Arg) / 100f;
             }
             return groupTime >= g.Arg; // 't' (only t0 is used: spawns together with the group before)
         }
@@ -280,6 +280,7 @@ namespace CombatTrainer {
             Trainer.Clear(); Running = true; // Clear resets us: we stay running
             foreach (var c in AllCreatures()) { var nv = c.GetComponent<ZNetView>(); if (nv != null && nv.IsValid() && nv.IsOwner()) ZNetScene.instance.Destroy(c.gameObject); } // untagged adds
             hits.Clear(); hitsLeft = HitBudget[runDiff]; nextGroup = 0;
+            MakePlan();
             ApplyLoadout();
             Player.m_localPlayer.Message(MessageHud.MessageType.Center, enc.Name + "  ·  " + BiomeNames[enc.Biome]);
         }
@@ -289,6 +290,24 @@ namespace CombatTrainer {
         static void EquipPending() {
             var p = Player.m_localPlayer; if (p == null) return;
             toEquip.RemoveAll(it => p.IsItemEquiped(it) || !p.GetInventory().ContainsItem(it) || p.EquipItem(it, false));
+        }
+
+        static readonly string[] HealthMead = { "MeadHealthMinor", "MeadHealthMedium", "MeadHealthMedium", "MeadHealthMedium", "MeadHealthMajor", "MeadHealthMajor", "MeadHealthMajor" };
+        static readonly string[] StaminaMead = { "MeadStaminaMinor", "MeadStaminaMinor", "MeadStaminaMinor", "MeadStaminaMedium", "MeadStaminaLingering", "MeadStaminaLingering", "MeadStaminaLingering" };
+        static readonly string[] MeadCooldowns = { "healthpotion", "staminapotion", "eitrpotion" };
+
+        // every encounter: mead cooldowns cleared, then the standing buffs drunk fresh
+        // (Swamp up: Tonic of Ratatosk; Mistlands up: Lingering Stamina + Lightfoot)
+        static void Meads(Player p, int b) {
+            var se = p.GetSEMan();
+            foreach (var e in se.GetStatusEffects().ToList()) if (MeadCooldowns.Contains(e.m_category)) se.RemoveStatusEffect(e.NameHash(), true);
+            Action<string> drink = prefab => {
+                var go = ObjectDB.instance.GetItemPrefab(prefab); if (go == null) return;
+                var buff = go.GetComponent<ItemDrop>().m_itemData.m_shared.m_consumeStatusEffect; if (buff == null) return;
+                se.AddStatusEffect(buff, true);
+            };
+            if (b >= 1) drink("MeadHasty");
+            if (b >= 4) { drink("MeadStaminaLingering"); drink("MeadLightfoot"); } // vanilla cooldown: slot 7 (lingering too) once it wears off
         }
 
         // what we handed out last time, by role: if you moved it, the next loadout puts that role's item where you put it
@@ -314,6 +333,10 @@ namespace CombatTrainer {
             for (int i = 0; i < loadout.Count; i++) { var it = put("w" + i, loadout[i].Prefab, loadout[i].Quality, 1, i, 0); if (i == 0 && it != null) equip.Add(it); }
             var shield = put("shield", Shields[b], 3, 1, 3, 0);
             put("hammer", "Hammer", 1, 1, 4, 0);
+            put("meadH", HealthMead[b], 1, 5, 5, 0); // last three hotbar slots: health, stamina, tasty
+            put("meadS", StaminaMead[b], 1, 5, 6, 0);
+            put("meadT", "MeadTasty", 1, 5, 7, 0);
+            Meads(p, b);
             if (shield != null && equip.Count > 0 && equip[0].m_shared.m_itemType == ItemDrop.ItemData.ItemType.OneHandedWeapon) equip.Add(shield);
             bool bow = loadout.Any(l => l.Prefab.StartsWith("Bow")), xbow = loadout.Any(l => l.Prefab.StartsWith("Crossbow"));
             if (bow) put("arrows", Arrows[b], 1, 100, 0, 1);
@@ -335,6 +358,63 @@ namespace CombatTrainer {
             Trainer.HealSoon();
         }
 
+        // ---- difficulty: Hard / Very hard make the encounter itself harder, all rolled from the seed (Retry is exact) ----
+        class GSpawn { public bool Marked; public int Stars; }
+        static List<List<GSpawn>> plan = new List<List<GSpawn>>();
+
+        // reinforcements come earlier: p50 -> Hard p70 -> Very hard p85
+        static float Gate(float arg) { return arg + (100f - arg) * (runDiff == 2 ? 0.7f : runDiff == 1 ? 0.4f : 0f); }
+
+        static void MakePlan() {
+            var r = new System.Random(seed ^ 0x5EED);
+            plan = enc.Groups.Select(g => {
+                int count = g.Count;
+                if (runDiff == 2 && !g.Marked && g != enc.Groups[0]) count++; // Very hard: +1 on every later group
+                return Enumerable.Range(0, count).Select(_ => new GSpawn { Marked = g.Marked, Stars = g.Stars }).ToList();
+            }).ToList();
+            if (runDiff == 1) { // Hard: +1 on the largest unmarked group
+                int big = -1;
+                for (int i = 0; i < enc.Groups.Count; i++) if (!enc.Groups[i].Marked && (big < 0 || enc.Groups[i].Count > enc.Groups[big].Count)) big = i;
+                if (big >= 0) plan[big].Add(new GSpawn { Stars = enc.Groups[big].Stars });
+            }
+            if (runDiff >= 1) {
+                if (runDiff == 2) { // Very hard: the first reinforcement's leader is marked
+                    int lead = enc.Groups.FindIndex(g => g != enc.Groups[0] && g.When != 't');
+                    if (lead >= 0 && plan[lead].Count > 0) plan[lead][0].Marked = true;
+                }
+                var free = plan.SelectMany(l => l).Where(x => !x.Marked).ToList(); // one more random mark
+                if (free.Count > 1) free[r.Next(free.Count)].Marked = true;
+                for (int gi = 0; gi < plan.Count; gi++) {
+                    int cap = MaxStars(enc.Groups[gi].Prefab);
+                    foreach (var x in plan[gi]) {
+                        double d = r.NextDouble();
+                        int st = runDiff == 2 ? (d < 0.15 ? 2 : d < 0.65 ? 1 : 0) : (d < 0.3 ? 1 : 0);
+                        x.Stars = x.Marked ? 0 : Mathf.Min(Mathf.Max(x.Stars, st), cap);
+                    }
+                }
+            }
+            foreach (var l in plan) foreach (var x in l) if (x.Marked) x.Stars = 0; // marked are never starred
+        }
+
+        // stars only where the game itself allows them: the highest level any spawn table gives that creature
+        // (world spawns, spawner areas, creature spawners). Not in any table, e.g. Deathsquito: no stars.
+        static Dictionary<string, int> maxStars;
+        static int MaxStars(string prefab) {
+            if (maxStars == null) {
+                maxStars = new Dictionary<string, int>();
+                Action<GameObject, int> note = (go, lvl) => { if (go == null) return; int cur; maxStars.TryGetValue(go.name, out cur); maxStars[go.name] = Mathf.Max(cur, lvl - 1); };
+                var zc = ZoneSystem.instance != null && ZoneSystem.instance.m_zoneCtrlPrefab != null ? ZoneSystem.instance.m_zoneCtrlPrefab.GetComponent<SpawnSystem>() : null;
+                if (zc != null) foreach (var list in zc.m_spawnLists) if (list != null) foreach (var sd in list.m_spawners) note(sd.m_prefab, sd.m_maxLevel);
+                foreach (var go in ZNetScene.instance.m_prefabs) {
+                    if (go == null) continue;
+                    var sa = go.GetComponent<SpawnArea>(); if (sa != null) foreach (var sd in sa.m_prefabs) note(sd.m_prefab, sd.m_maxLevel);
+                    var cs = go.GetComponent<CreatureSpawner>(); if (cs != null) note(cs.m_creaturePrefab, cs.m_maxLevel);
+                }
+                Debug.Log("[CombatTrainer] gauntlet: star caps known for " + maxStars.Count + " creatures");
+            }
+            int m; return maxStars.TryGetValue(prefab, out m) ? Mathf.Clamp(m, 0, 2) : 0;
+        }
+
         static void SpawnGroup(int gi) {
             var g = enc.Groups[gi];
             groupTime = 0f;
@@ -348,7 +428,8 @@ namespace CombatTrainer {
             Vector3 fwd = gi == 0 ? anchorFwd : p.forward; fwd.y = 0f; fwd.Normalize();
             Vector3 origin = gi == 0 ? anchorPos : p.position;
             float radius = Trainer.RadiusOf(prefab);
-            for (int n = 0; n < g.Count; n++) {
+            var gp = plan[gi];
+            for (int n = 0; n < gp.Count; n++) {
                 Vector3 pos = origin;
                 var rng = new System.Random(seed * 31 + gi * 101 + n);
                 for (int t = 0; t < 30; t++) {
@@ -358,10 +439,10 @@ namespace CombatTrainer {
                     pos = origin + Quaternion.Euler(0f, ang, 0f) * fwd * dist;
                     if (Alive().All(c => Vector3.Distance(c.transform.position, pos) > radius + c.GetRadius() + 0.75f)) break;
                 }
-                var ch = Trainer.SpawnAt(prefab, g.Stars, Trainer.Ground(pos));
+                var ch = Trainer.SpawnAt(prefab, gp[n].Stars, Trainer.Ground(pos));
                 if (ch == null) continue;
                 list.Add(ch);
-                if (g.Marked) Mark(ch);
+                if (gp[n].Marked) Mark(ch);
                 var ai = ch.GetComponent<BaseAI>();
                 if (ai != null) { ai.Alert(); ai.SetHuntPlayer(true); }
             }
@@ -421,6 +502,13 @@ namespace CombatTrainer {
             hits.Add(new GHit { Time = encTime, Who = Localization.instance.Localize(pendingAttacker.m_name), With = with, Marked = Marked.Contains(pendingAttacker) });
             if (hitsLeft <= 0) Dying = true;
             Feedback.Lost(pendingAttacker);
+        }
+
+        // a healing mead gives back one hit (never above the budget)
+        internal static void DrankHealth() {
+            if (Dying || hitsLeft >= HitBudget[runDiff]) return;
+            hitsLeft++;
+            Feedback.Refilled();
         }
 
         internal static void AfterDamage(Player p) {
@@ -520,6 +608,14 @@ namespace CombatTrainer {
     }
 
     // health never drops in the gauntlet: hits are counted instead, and only the last one kills
+    [HarmonyPatch(typeof(Player), "ConsumeItem")]
+    static class GauntletMead {
+        static void Postfix(Player __instance, ItemDrop.ItemData item, bool __result) {
+            var buff = item != null ? item.m_shared.m_consumeStatusEffect : null;
+            if (__result && Gauntlet.Running && __instance == Player.m_localPlayer && buff != null && buff.m_category == "healthpotion") Gauntlet.DrankHealth();
+        }
+    }
+
     [HarmonyPatch(typeof(Character), "ApplyDamage")]
     static class GauntletHealth {
         static void Prefix(Character __instance, HitData hit) {
@@ -617,6 +713,8 @@ namespace CombatTrainer {
             MessageHud.instance.ShowBiomeFoundMsg("Cleared", true);
             if (se != null) se.m_isNew = true;
         }
+
+        internal static void Refilled() { if (se != null) se.m_isNew = true; }
 
         internal static void Off() {
             var p = Player.m_localPlayer;
